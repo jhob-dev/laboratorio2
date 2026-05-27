@@ -65,24 +65,15 @@
     // ============================================
     // MODAL: REALIZAR EXAMEN
     // ============================================
-    // document.addEventListener('click', function (e) {
-    //     const btnRealizar = e.target.closest('.btn-realizar-examen');
-    //     if (!btnRealizar) return;
+    document.addEventListener('click', function (e) {
+        const btnRealizar = e.target.closest('.btn-realizar-examen');
+        if (!btnRealizar) return;
 
-    //     const pacienteId = btnRealizar.dataset.pacienteId;
-    //     const pacienteNombre = btnRealizar.dataset.pacienteNombre;
+        const pacienteId = btnRealizar.dataset.pacienteId;
+        const pacienteNombre = btnRealizar.dataset.pacienteNombre;
 
-    //     abrirModalRealizarExamen(pacienteId, pacienteNombre);
-    // });
-    // Evento para el botón de Exámenes Rápidos
-    const btnExamenesRapidos = document.getElementById('btnExamenesRapidos');
-    if (btnExamenesRapidos) {
-        btnExamenesRapidos.addEventListener('click', function (e) {
-            e.preventDefault();
-            // Redirige a la lista de pacientes para seleccionar uno rápidamente
-            window.location.href = APP_URL + 'pacientes';
-        });
-    }
+        abrirModalRealizarExamen(pacienteId, pacienteNombre);
+    });
 
     function abrirModalRealizarExamen(pacienteId, pacienteNombre) {
         // Obtener lista de exámenes vía API
@@ -392,7 +383,15 @@
                 });
         });
     }
-
+    // Evento para el botón de Exámenes Rápidos
+    const btnExamenesRapidos = document.getElementById('btnExamenesRapidos');
+    if (btnExamenesRapidos) {
+        btnExamenesRapidos.addEventListener('click', function (e) {
+            e.preventDefault();
+            // Redirige a la lista de pacientes para seleccionar uno rápidamente
+            window.location.href = APP_URL + 'pacientes';
+        });
+    }
     // ============================================
     // FUNCIONES GLOBALES DE MODAL
     // ============================================
@@ -420,15 +419,4 @@
             e.target.remove();
         }
     });
-
-    // Evento para el botón de Exámenes Rápidos
-    const btnExamenesRapidos = document.getElementById('btnExamenesRapidos');
-    if (btnExamenesRapidos) {
-        btnExamenesRapidos.addEventListener('click', function (e) {
-            e.preventDefault();
-            // Redirige a la lista de pacientes para seleccionar uno rápidamente
-            window.location.href = APP_URL + 'pacientes';
-        });
-    }
-
 })();
