@@ -38,4 +38,13 @@ class Examen extends Model
         $stmt->execute([$pacienteId]);
         return $stmt->fetchAll();
     }
+    // ==================================
+    // CREAR EXAMEN DESDE EL FRONT-END
+    // ==================================
+    public function crearExamen($data) {
+    $sql = "INSERT INTO examenes (codigo, nombre, descripcion, precio, categoria, activo) VALUES (?, ?, ?, ?, ?, 1)";
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute([$data['codigo'], $data['nombre'], $data['descripcion'] ?? '', $data['precio'], $data['categoria'] ?? 'General']);
+    return $this->db->lastInsertId();
+}
 }

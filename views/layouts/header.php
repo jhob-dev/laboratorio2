@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div class="app-container">
         <!-- Sidebar -->
@@ -35,27 +37,32 @@
 
             <!-- Contenido de la página -->
             <div class="page-content">
-                <?php if (isset($_SESSION['mensaje'])): ?>
-                    <div class="alert alert-success">
-                        <i class="fas fa-check-circle"></i>
-                        <?php echo $_SESSION['mensaje']; unset($_SESSION['mensaje']); ?>
-                    </div>
-                <?php endif; ?>
-
-                <?php if (isset($_SESSION['error'])): ?>
-                    <div class="alert alert-error">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
-                    </div>
-                <?php endif; ?>
-
-                <?php if (isset($_SESSION['errores'])): ?>
-                    <div class="alert alert-error">
-                        <ul>
-                            <?php foreach ($_SESSION['errores'] as $error): ?>
-                                <li><?php echo $error; ?></li>
+                <!-- Las notificaciones del servidor se transformarán en toasts -->
+                <?php if (isset($_SESSION['mensaje']) || isset($_SESSION['error']) || isset($_SESSION['errores'])): ?>
+                    <script>
+                        window.toastMessages = window.toastMessages || [];
+                        <?php if (isset($_SESSION['mensaje'])): ?>
+                            window.toastMessages.push({
+                                type: 'success',
+                                text: <?php echo json_encode($_SESSION['mensaje']); ?>
+                            });
+                            <?php unset($_SESSION['mensaje']); ?>
+                        <?php endif; ?>
+                        <?php if (isset($_SESSION['error'])): ?>
+                            window.toastMessages.push({
+                                type: 'error',
+                                text: <?php echo json_encode($_SESSION['error']); ?>
+                            });
+                            <?php unset($_SESSION['error']); ?>
+                        <?php endif; ?>
+                        <?php if (isset($_SESSION['errores'])): ?>
+                            <?php foreach ($_SESSION['errores'] as $err): ?>
+                                window.toastMessages.push({
+                                    type: 'error',
+                                    text: <?php echo json_encode($err); ?>
+                                });
                             <?php endforeach; ?>
-                        </ul>
-                    </div>
-                    <?php unset($_SESSION['errores']); ?>
+                            <?php unset($_SESSION['errores']); ?>
+                        <?php endif; ?>
+                    </script>
                 <?php endif; ?>

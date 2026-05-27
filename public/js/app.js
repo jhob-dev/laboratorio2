@@ -5,6 +5,23 @@
 (function () {
     'use strict';
 
+    // ==================================================
+    // NOTIFICACIONES TOAST
+    // ==================================================
+    function showToast(message, type = 'success') {
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+        toast.innerHTML = `<i class="fas ${icons[type] || icons.success} toast-icon"></i><span class="toast-message">${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => { toast.remove(); if (container.children.length === 0) container.remove(); }, 4000);
+    }
     // ============================================
     // CÁLCULO DE EDAD EN TIEMPO REAL
     // ============================================
@@ -245,24 +262,20 @@
             formData.append('metodo_pago', metodoPago);
             formData.append('referencia_pago', referenciaPago);
 
-            fetch(`${APP_URL}examenes/realizar`, {
-                method: 'POST',
-                body: formData
-            })
+            fetch(`${APP_URL}examenes/realizar`, { method= "POST" })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        showToast(data.mensaje, 'success');
                         cerrarModal('modalRealizarExamen');
-                        showToast(data.mensaje);
-                        // Recargar la página para ver el nuevo examen
                         location.reload();
                     } else {
-                        showToast('Error: ' + (data.error || 'No se pudo procesar la solicitud.'));
+                        showToast(data.error || 'Error al registrar el examen.', 'error');
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    showToast('Error de conexión. Intente nuevamente.');
+                    console.error(error);
+                    showToast('Error de conexión.', 'error');
                 });
         });
     }
@@ -279,16 +292,17 @@
     });
 
     function abrirModalResultados(ordenId) {
-        fetch(`${APP_URL}examenes/obtener?orden_id=${ordenId}`)
-            .then(response => response.json())
+        fetch(`${APP_URL}examenes/guardar-resultados`, { $ordenId})
             .then(data => {
-                const examen = data.examen;
-                construirModalResultados(ordenId, examen);
+                if (data.success) {
+                    showToast(data.mensaje, 'success');
+                    cerrarModal('modalResultados');
+                    location.reload();
+                } else {
+                    showToast(data.error || 'Error al guardar resultados.', 'error');
+                }
             })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast('Error al cargar los datos del examen.');
-            });
+            .catch(() => showToast('Error de conexión.', 'error'));
     }
 
     function construirModalResultados(ordenId, examen) {
@@ -422,117 +436,90 @@
 
 
     function showToast(message, type = 'success') {
-    // Crear contenedor si no existe
-    let container = document.querySelector('.toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.className = 'toast-container';
-        document.body.appendChild(container);
-    }
-
-    // Evento para el botón "Nuevo Examen" en el sidebar
-document.addEventListener('click', function(e) {
-    const btnNuevo = e.target.closest('#btnNuevoExamen');
-    if (!btnNuevo) return;
-    e.preventDefault();
-    abrirModalNuevoExamen();
-});
-
-function abrirModalNuevoExamen() {
-    const modalHTML = `
-        <div class="modal-overlay" id="modalNuevoExamen">
-            <div class="modal" style="max-width:500px;">
-                <div class="modal-header">
-                    <h3><i class="fas fa-plus-circle"></i> Nuevo Examen</h3>
-                    <button class="modal-close" onclick="cerrarModal('modalNuevoExamen')">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="formNuevoExamen">
-                        <div class="form-group">
-                            <label>Código <span class="required">*</span></label>
-                            <input type="text" name="codigo" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Nombre <span class="required">*</span></label>
-                            <input type="text" name="nombre" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Precio ($) <span class="required">*</span></label>
-                            <input type="number" step="0.01" min="0" name="precio" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Categoría</label>
-                            <input type="text" name="categoria" class="form-control" placeholder="Ej. Hematología">
-                        </div>
-                        <div class="form-group">
-                            <label>Descripción</label>
-                            <textarea name="descripcion" class="form-control" rows="2"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline" onclick="cerrarModal('modalNuevoExamen')">Cancelar</button>
-                    <button type="button" class="btn btn-success" id="btnGuardarNuevoExamen">
-                        <i class="fas fa-save"></i> Guardar
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-
-    document.getElementById('modalContainer').innerHTML = modalHTML;
-
-    // Evento para guardar
-    document.getElementById('btnGuardarNuevoExamen').addEventListener('click', function() {
-        const form = document.getElementById('formNuevoExamen');
-        const formData = new FormData(form);
-
-        fetch(APP_URL + 'examenes/crear', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showToast(data.mensaje, 'success');
-                cerrarModal('modalNuevoExamen');
-                // Opcional: recargar para reflejar el nuevo examen en los listados
-                setTimeout(() => location.reload(), 1000);
-            } else {
-                showToast(data.error || 'Error al crear el examen', 'error');
+        // Crear contenedor si no existe
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+        // Procesar mensajes del servidor al cargar la página
+        window.addEventListener('DOMContentLoaded', function () {
+            if (window.toastMessages && Array.isArray(window.toastMessages)) {
+                window.toastMessages.forEach(function (msg) {
+                    showToast(msg.text, msg.type);
+                });
             }
-        })
-        .catch(() => {
-            showToast('Error de conexión', 'error');
         });
-    });
-}
 
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    
-    const icons = {
-        success: 'fa-check-circle',
-        error: 'fa-exclamation-circle',
-        info: 'fa-info-circle'
-    };
+        // Evento para el botón "Nuevo Examen" en el sidebar
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
 
-    toast.innerHTML = `
+        const icons = {
+            success: 'fa-check-circle',
+            error: 'fa-exclamation-circle',
+            info: 'fa-info-circle'
+        };
+
+        toast.innerHTML = `
         <i class="fas ${icons[type] || icons.success} toast-icon"></i>
         <span class="toast-message">${message}</span>
     `;
 
-    container.appendChild(toast);
+        container.appendChild(toast);
 
-    // Eliminar después de la animación
-    setTimeout(() => {
-        toast.remove();
-        // Si el contenedor queda vacío, eliminarlo también
-        if (container.children.length === 0) {
-            container.remove();
-        }
-    }, 4000);
-}
+        // Eliminar después de la animación
+        setTimeout(() => {
+            toast.remove();
+            // Si el contenedor queda vacío, eliminarlo también
+            if (container.children.length === 0) {
+                container.remove();
+            }
+        }, 4000);
+    }
+
+    document.addEventListener('click', function (e) {
+        const btnNuevo = e.target.closest('#btnNuevoExamen');
+        if (!btnNuevo) return;
+        e.preventDefault();
+        abrirModalNuevoExamen();
+    });
+
+    function abrirModalNuevoExamen() {
+        const modalHTML = `
+        <div class="modal-overlay" id="modalNuevoExamen">
+            <div class="modal" style="max-width:500px;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-plus-circle"></i> Nuevo Examen</h3>
+                    <button class="modal-close" onclick="cerrarModal('modalNuevoExamen')"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formNuevoExamen">
+                        <div class="form-group"><label>Código <span class="required">*</span></label><input type="text" name="codigo" class="form-control" required></div>
+                        <div class="form-group"><label>Nombre <span class="required">*</span></label><input type="text" name="nombre" class="form-control" required></div>
+                        <div class="form-group"><label>Precio ($) <span class="required">*</span></label><input type="number" step="0.01" min="0" name="precio" class="form-control" required></div>
+                        <div class="form-group"><label>Categoría</label><input type="text" name="categoria" class="form-control" placeholder="Ej. Hematología"></div>
+                        <div class="form-group"><label>Descripción</label><textarea name="descripcion" class="form-control" rows="2"></textarea></div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="cerrarModal('modalNuevoExamen')">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="btnGuardarNuevoExamen"><i class="fas fa-save"></i> Guardar</button>
+                </div>
+            </div>
+        </div>`;
+        document.getElementById('modalContainer').innerHTML = modalHTML;
+        document.getElementById('btnGuardarNuevoExamen').addEventListener('click', function () {
+            const form = document.getElementById('formNuevoExamen');
+            const formData = new FormData(form);
+            fetch(APP_URL + 'examenes/crear', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) { showToast(data.mensaje, 'success'); cerrarModal('modalNuevoExamen'); setTimeout(() => location.reload(), 1000); }
+                    else { showToast(data.error || 'Error al crear el examen', 'error'); }
+                })
+                .catch(() => { showToast('Error de conexión', 'error'); });
+        });
+    }
 })();
