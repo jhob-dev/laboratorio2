@@ -40,6 +40,7 @@ $router->add('/examenes/listar', 'ExamenController', 'listarExamenes');
 $router->add('/examenes/realizar', 'ExamenController', 'realizarExamen');
 $router->add('/examenes/obtener', 'ExamenController', 'obtenerExamen');
 $router->add('/examenes/guardar-resultados', 'ExamenController', 'guardarResultados');
+$router->add('/examenes/crear', 'ExamenController', 'crearExamen');
 
 // Reportes
 // /reportes/imprimir/{id}

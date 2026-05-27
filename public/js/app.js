@@ -85,7 +85,7 @@
             })
             .catch(error => {
                 console.error('Error al cargar exámenes:', error);
-                alert('Error al cargar la lista de exámenes. Intente nuevamente.');
+                showToast('Error al cargar la lista de exámenes. Intente nuevamente.');
             });
     }
 
@@ -229,12 +229,12 @@
             const referenciaPago = document.getElementById('referencia_pago').value;
 
             if (!examenId) {
-                alert('Por favor, seleccione un examen.');
+                showToast('Por favor, seleccione un examen.');
                 return;
             }
 
             if ((metodoPago === 'Pago Móvil' || metodoPago === 'Transferencia') && referenciaPago.length < 4) {
-                alert('Debe ingresar los últimos 4 dígitos de la transacción.');
+                showToast('Debe ingresar los últimos 4 dígitos de la transacción.');
                 return;
             }
 
@@ -253,16 +253,16 @@
                 .then(data => {
                     if (data.success) {
                         cerrarModal('modalRealizarExamen');
-                        alert(data.mensaje);
+                        showToast(data.mensaje);
                         // Recargar la página para ver el nuevo examen
                         location.reload();
                     } else {
-                        alert('Error: ' + (data.error || 'No se pudo procesar la solicitud.'));
+                        showToast('Error: ' + (data.error || 'No se pudo procesar la solicitud.'));
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error de conexión. Intente nuevamente.');
+                    showToast('Error de conexión. Intente nuevamente.');
                 });
         });
     }
@@ -287,7 +287,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al cargar los datos del examen.');
+                showToast('Error al cargar los datos del examen.');
             });
     }
 
@@ -354,7 +354,7 @@
             const observaciones = document.getElementById('observaciones').value;
 
             if (!resultadoTexto.trim()) {
-                alert('Debe ingresar los resultados del examen.');
+                showToast('Debe ingresar los resultados del examen.');
                 return;
             }
 
@@ -371,15 +371,15 @@
                 .then(data => {
                     if (data.success) {
                         cerrarModal('modalResultados');
-                        alert(data.mensaje);
+                        showToast(data.mensaje);
                         location.reload();
                     } else {
-                        alert('Error: ' + (data.error || 'No se pudieron guardar los resultados.'));
+                        showToast('Error: ' + (data.error || 'No se pudieron guardar los resultados.'));
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Error de conexión.');
+                    showToast('Error de conexión.');
                 });
         });
     }
@@ -419,4 +419,120 @@
             e.target.remove();
         }
     });
+
+
+    function showToast(message, type = 'success') {
+    // Crear contenedor si no existe
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    // Evento para el botón "Nuevo Examen" en el sidebar
+document.addEventListener('click', function(e) {
+    const btnNuevo = e.target.closest('#btnNuevoExamen');
+    if (!btnNuevo) return;
+    e.preventDefault();
+    abrirModalNuevoExamen();
+});
+
+function abrirModalNuevoExamen() {
+    const modalHTML = `
+        <div class="modal-overlay" id="modalNuevoExamen">
+            <div class="modal" style="max-width:500px;">
+                <div class="modal-header">
+                    <h3><i class="fas fa-plus-circle"></i> Nuevo Examen</h3>
+                    <button class="modal-close" onclick="cerrarModal('modalNuevoExamen')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="formNuevoExamen">
+                        <div class="form-group">
+                            <label>Código <span class="required">*</span></label>
+                            <input type="text" name="codigo" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Nombre <span class="required">*</span></label>
+                            <input type="text" name="nombre" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Precio ($) <span class="required">*</span></label>
+                            <input type="number" step="0.01" min="0" name="precio" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Categoría</label>
+                            <input type="text" name="categoria" class="form-control" placeholder="Ej. Hematología">
+                        </div>
+                        <div class="form-group">
+                            <label>Descripción</label>
+                            <textarea name="descripcion" class="form-control" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="cerrarModal('modalNuevoExamen')">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="btnGuardarNuevoExamen">
+                        <i class="fas fa-save"></i> Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('modalContainer').innerHTML = modalHTML;
+
+    // Evento para guardar
+    document.getElementById('btnGuardarNuevoExamen').addEventListener('click', function() {
+        const form = document.getElementById('formNuevoExamen');
+        const formData = new FormData(form);
+
+        fetch(APP_URL + 'examenes/crear', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.mensaje, 'success');
+                cerrarModal('modalNuevoExamen');
+                // Opcional: recargar para reflejar el nuevo examen en los listados
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast(data.error || 'Error al crear el examen', 'error');
+            }
+        })
+        .catch(() => {
+            showToast('Error de conexión', 'error');
+        });
+    });
+}
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        info: 'fa-info-circle'
+    };
+
+    toast.innerHTML = `
+        <i class="fas ${icons[type] || icons.success} toast-icon"></i>
+        <span class="toast-message">${message}</span>
+    `;
+
+    container.appendChild(toast);
+
+    // Eliminar después de la animación
+    setTimeout(() => {
+        toast.remove();
+        // Si el contenedor queda vacío, eliminarlo también
+        if (container.children.length === 0) {
+            container.remove();
+        }
+    }, 4000);
+}
 })();

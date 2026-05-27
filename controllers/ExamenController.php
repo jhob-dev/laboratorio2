@@ -101,4 +101,32 @@ class ExamenController extends Controller
             'mensaje' => 'Resultados guardados exitosamente.'
         ]);
     }
+
+    public function crearExamen() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        $this->jsonResponse(['error' => 'Método no permitido'], 405);
+    }
+
+    $codigo = trim($_POST['codigo'] ?? '');
+    $nombre = trim($_POST['nombre'] ?? '');
+    $precio = floatval($_POST['precio'] ?? 0);
+    $categoria = trim($_POST['categoria'] ?? 'General');
+    $descripcion = trim($_POST['descripcion'] ?? '');
+
+    // Validaciones básicas
+    if (empty($codigo) || empty($nombre) || $precio <= 0) {
+        $this->jsonResponse(['error' => 'Código, nombre y precio son obligatorios.'], 400);
+    }
+
+    $data = [
+        'codigo' => $codigo,
+        'nombre' => $nombre,
+        'descripcion' => $descripcion,
+        'precio' => $precio,
+        'categoria' => $categoria
+    ];
+
+    $id = $this->examenModel->crearExamen($data);
+    $this->jsonResponse(['success' => true, 'mensaje' => 'Examen creado exitosamente.', 'id' => $id]);
+}
 }

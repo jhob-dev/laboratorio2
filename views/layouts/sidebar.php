@@ -26,6 +26,13 @@
                     <span>Exámenes Rápidos</span>
                 </a>
             </li>
+            <li class="sidebar-divider"></li>
+            <li>
+                <a href="#" id="btnNuevoExamen">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Nuevo Examen</span>
+                </a>
+            </li>
         </ul>
     </nav>
 </aside>
